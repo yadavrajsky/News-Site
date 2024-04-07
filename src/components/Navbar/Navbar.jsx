@@ -1,170 +1,127 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
-// /* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux"; // Import useSelector
-
+import React, { useEffect, useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { TbLayoutDashboard } from "react-icons/tb";
-import { HiTemplate } from "react-icons/hi";
+import { AiOutlineMenuUnfold, AiOutlineMenuFold } from "react-icons/ai";
+import { FiSun, FiMoon } from "react-icons/fi";
+import {
+  FaBriefcase,
+  FaFilm,
+  FaHeartbeat,
+  FaFootballBall,
+  FaLaptop,
+  FaFlask,
+} from "react-icons/fa";
 
 const navLinks = [
   {
-    title: "Home",
+    title: "Top News",
     link: "/",
     icon: <TbLayoutDashboard />,
   },
   {
-    title: "About",
-    link: "/about",
-    icon: <HiTemplate />,
+    title: "Business",
+    link: "/business",
+    icon: <FaBriefcase />,
   },
-  // {
-  //   title: "Link3",
-  //   link: "/",
-  //   icon: <AiFillCrown />,
-  // },
-  // {
-  //   title: "Link4",
-  //   link: "/",
-  //   icon: <GiSellCard />,
-  // },
+  {
+    title: "Entertainment",
+    link: "/entertainment",
+    icon: <FaFilm />,
+  },
+  {
+    title: "Health",
+    link: "/health",
+    icon: <FaHeartbeat />,
+  },
+  {
+    title: "Science",
+    link: "/science",
+    icon: <FaFlask />,
+  },
+  {
+    title: "Sports",
+    link: "/sports",
+    icon: <FaFootballBall />,
+  },
+  {
+    title: "Technology",
+    link: "/technology",
+    icon: <FaLaptop />,
+  },
 ];
-import { AiOutlineMenuUnfold, AiOutlineMenuFold } from "react-icons/ai";
-import { logoutUser } from "../../reducers/authSlice";
+
 export default function Navbar() {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { isLoading, error, message, user, isAuthenticated } = useSelector(
-    (state) => state.auth
+  const [isMobileNavOpen, setisMobileNavOpen] = useState(false);
+  const mobileNavRef = useRef(null);
+  const [theme, setTheme] = useState(
+    localStorage.theme === "dark" ||
+      (!("theme" in localStorage) &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ? "dark"
+      : "light"
   );
 
-  const location = useLocation();
-  const [isMobileNavOpen, setisMobileNavOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const isSignupRoute = location.pathname === "/signup";
-  const isLoginRoute = location.pathname === "/login";
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    localStorage.theme = newTheme;
+  };
 
-  //   If button is there
-  const handleClick = () => {
-    if (isMobileNavOpen) {
+  const handleClickOutside = (event) => {
+    if (mobileNavRef.current && !mobileNavRef.current.contains(event.target)) {
       setisMobileNavOpen(false);
     }
   };
-  // const toggleMobileNav = () => {
-  //   setisMobileNavOpen(!isMobileNavOpen);
-  // };
-  const handleLogout = (e) => {
-    e.preventDefault();
-    // Dispatch the logoutUser async thunk
-    dispatch(logoutUser());
-  };
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
   useEffect(() => {
-    if (isAuthenticated && user) navigate("/dashboard");
-  }, []);
+    if (isMobileNavOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMobileNavOpen]);
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [theme]);
 
   return (
-    <div>
-      <div className="flex flex-wrap sys-app-notCollapsed ">
-        <div className="w-full ">
-          <div className="pb-0 py-2 px-2 mx-auto ">
-            <div className="w-full flex justify-between items-center p-2 text-gray-900 bg-white rounded-lg shadow-lg font-medium ">
+    <div className={`dark:bg-gray-700`}>
+      <div className="flex flex-wrap pb-2 ">
+        <div className="w-full">
+          {/* Desktop Navbar */}
+          <div className="mx-auto">
+            <div className="w-full flex flex-1 justify-between items-center p-2 rounded-lg shadow-lg font-medium ">
               {/* Logo */}
-              <div>
+              <div className="flex">
                 <span className="px-2 mr-2">
-                  <Link to={"/"}>Quantafile</Link>
-                  {/* <img
-                    src="https://www.freepnglogos.com/uploads/spotify-logo-png/file-spotify-logo-png-4.png"
-                    alt="alt placeholder"
-                    className="w-8 h-8 -mt-1 inline mx-auto"
-                  /> */}
+                  <img
+                    src="/logo.svg"
+                    alt="New Logo"
+                    className="h-8 w-14 inline mx-auto dark:text-white"
+                  />
+                  <Link
+                    to={"/"}
+                    className={` dark:text-white ${
+                      theme === "dark" ? "text-white" : "text-black"
+                    }`}
+                  >
+                    Dhakad News{" "}
+                  </Link>
                 </span>
               </div>
 
               <div className="flex items-center order-2">
-                {isAuthenticated ? (
-                  <>
-                    <button
-                      type="button"
-                      className="flex mr-3 text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                      id="user-menu-button"
-                      aria-expanded="false"
-                      data-dropdown-toggle="user-dropdown"
-                      data-dropdown-placement="bottom"
-                      onClick={()=>toggleDropdown()}
-                    >
-                      <span className="sr-only">Open user menu</span>
-                      <img
-                        className="w-8 h-8 rounded-full"
-                        src="/docs/images/people/profile-picture-3.jpg"
-                        alt="user photo"
-                      />
-                    </button>
-                    {/* Dropdown menu */}
-                    {isDropdownOpen && (
-                      <div className="absolute top-12 right-1 mt-2 py-2 w-48 bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-700 dark:border-gray-600">
-                        <div className="px-4 py-3">
-                          {/* <span className="block text-sm text-gray-900 dark:text-white">
-                            Bonnie Green
-                          </span> */}
-                          <span className="block text-sm text-gray-500 truncate dark:text-gray-400">
-                            {user?.username}
-                          </span>
-                        </div>
-                        <ul>
-                          <li>
-                            <Link
-                              to="/dashboard"
-                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                            >
-                              Dashboard
-                            </Link>
-                          </li>
-                          {/* <li>
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                >
-                  Settings
-                </a>
-              </li> */}
-                          <li>
-                            <button
-                              onClick={handleLogout}
-                              className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                            >
-                              Sign out
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <ul className="flex items-center md:order-2 gap-3">
-                    {/* <li className="hover:bg-gray-500 p-2 rounded-md">
-                      <Link to="/">Home</Link>
-                    </li> */}
-
-                    {!isAuthenticated && !isSignupRoute && (
-                      <li className=" p-2 bg-gray-300 rounded-lg">
-                        <Link to="/signup">Signup</Link>
-                      </li>
-                    )}
-                    {!isAuthenticated && !isLoginRoute && (
-                      <li className=" p-2 bg-gray-300 rounded-lg">
-                        <Link to="/login">Login</Link>
-                      </li>
-                    )}
-                  </ul>
-                )}
-
                 {/* Hamberger Menu  */}
-                <div className="md:hidden transition-all mr-3 my-3 cursor-pointer hover:text-gray-700">
+                <div className="md:hidden transition-all mr-3 my-3 cursor-pointer dark:text-white hover:text-gray-700">
                   {isMobileNavOpen ? (
                     <AiOutlineMenuFold
                       onClick={() => setisMobileNavOpen(false)}
@@ -178,74 +135,94 @@ export default function Navbar() {
                   )}
                 </div>
               </div>
-              <div className="px-2 md:flex gap-x-5 items-center justify-center flex-1 text-gray-900 bg-white font-medium  hidden">
-                {/* Links */}
+
+              <div className="px-2 md:flex gap-x-5 items-center justify-center flex-1 text-gray-900 font-medium  dark:text-white hidden">
                 {navLinks?.map(({ title, link, icon }, id) => (
                   <Link key={id} to={link}>
                     <span
                       id={id}
-                      className={`px-2 py-1 flex items-center cursor-pointer hover:bg-gray-200 hover:text-gray-700 text-sm rounded ${
-                        location.pathname == link
-                          ? "text-gray-700 font-semibold"
-                          : ""
-                      }`}
+                      className={`px-2 py-1 flex items-center cursor-pointer hover:bg-gray-200 hover:text-gray-700 text-sm rounded`}
                     >
-                      <span className="p-2 bg-gray-200 rounded-full">
+                      <span className="p-2 dark:bg-white dark:text-black rounded-full">
                         {icon}
                       </span>
-                      <span className="mx-1">{title}</span>
+                      <span className="mx-1   hover:text-gray-700 ">
+                        {title}
+                      </span>
                     </span>
                   </Link>
                 ))}
               </div>
-
-              {/* After all nav links if you want any button in right then it will come here */}
               <div></div>
             </div>
           </div>
 
           {/* Mobile Navbar */}
           <div
-            id="navbar"
+            ref={mobileNavRef}
             className={`pt-0 absolute top-2 z-100 mx-auto ${
               isMobileNavOpen ? "translate-x-0" : "-translate-x-full"
             } transition-all flex-wrap md:hidden`}
-            onClick={handleClick}
           >
             <div className="py-[.5px] w-64">
-              <div className="w-full py-4 space-y-6 px-2 text-gray-900 bg-white rounded-lg min-h-screen  text-right  font-medium shadow-lg">
+              <div className="w-full py-4 px-2 text-gray-900 bg-white rounded-lg min-h-screen  text-right  font-medium shadow-lg dark:bg-gray-900">
                 {/* Logo */}
-                <img
-                  src="https://www.freepnglogos.com/uploads/spotify-logo-png/file-spotify-logo-png-4.png"
-                  alt="alt placeholder"
-                  className="w-8 h-8 mx-auto mb-5 "
-                />
+                <div className="flex">
+                  <span className="px-2 mr-2">
+                    <img
+                      src="/logo.svg"
+                      alt="New Logo"
+                      className="h-8 w-14 inline mx-auto"
+                    />
 
-                {/* Links */}
-                {navLinks?.map(({ title, link, icon }, id) => (
-                  <Link key={id} href={link}>
-                    <span
-                      id={id}
-                      className={`px-2 flex items-center cursor-pointer my-2 py-2 hover:bg-gray-200 hover:text-gray-700 text-sm rounded ${
-                        location.pathname == link
-                          ? "text-gray-700 font-semibold"
-                          : ""
+                    <Link
+                      to={"/"}
+                      className={`ml-3 dark:text-white ${
+                        theme === "dark" ? "text-white" : "text-black"
                       }`}
                     >
-                      <span className="p-2 bg-gray-200 rounded-full">
-                        {icon}
+                      Dhakad News{" "}
+                    </Link>
+                  </span>
+                </div>
+                {/* Links */}
+                <div className="mt-3">
+                  {navLinks?.map(({ title, link, icon }, id) => (
+                    <Link key={id} to={link}>
+                      <span
+                        id={id}
+                        className={`px-2 py-1 flex items-center cursor-pointer hover:bg-gray-200 hover:text-gray-700 text-sm rounded`}
+                      >
+                        <span className="p-2 dark:bg-white dark:text-black rounded-full">
+                          {icon}
+                        </span>
+                        <span className="mx-1 dark:text-white  hover:text-gray-700 ">
+                          {title}
+                        </span>
                       </span>
-                      <span className="mx-1">{title}</span>
-                    </span>
-                  </Link>
-                ))}
+                    </Link>
+                  ))}
+                </div>
 
-                {/* After all nav links if you want any button or link then it will come here */}
                 <div></div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+      {/* Theme Toggle Button */}
+      <div className="fixed bottom-5 right-5 dark:text-white">
+        <button onClick={toggleTheme} title="Theme Switcher">
+          {theme === "dark" ? (
+            <>
+              <FiSun />
+            </>
+          ) : (
+            <>
+              <FiMoon />{" "}
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

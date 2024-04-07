@@ -23,8 +23,8 @@ export default defineConfig({
     plugins: [react()],
     server: {
       proxy: {
-        "/api": {
-          target: "http://127.0.0.1:4000",
+        "/v2": {
+          target: "https://newsapi.org/",
           changeOrigin: true,
           secure: false,
         },
